@@ -37,7 +37,21 @@ class MieleAuthError(Exception):
 
 
 class MieleApiError(Exception):
-    """A non-auth API error (bad status, network)."""
+    """A non-auth API error (bad status, network, or a rejected write)."""
+
+
+def check_write_result(result: Any) -> Any:
+    """Raise if a /Cooling write was rejected.
+
+    Writes return HTTP 200 with a body like [{"Success":{"Value":N}}] or
+    [{"Failure":{"<field>":null}}]. A Failure means the appliance refused the value
+    (out of range, not permitted), so surface it instead of silently succeeding.
+    """
+    items = result if isinstance(result, list) else [result] if result else []
+    failures = [next(iter(i)) for i in items if isinstance(i, dict) and "Failure" in i]
+    if failures:
+        raise MieleApiError(f"appliance rejected write: {failures}")
+    return result
 
 
 class MieleCloud:
@@ -127,7 +141,9 @@ class MieleCloud:
                     raise MieleAuthError(f"{r.status} on PUT {path}")
                 if r.status not in (200, 204):
                     raise MieleApiError(f"{r.status} on PUT {path}: {await r.text()}")
-                return await r.json(content_type=None) if r.status == 200 else None
+                if r.status == 204:
+                    return None
+                return check_write_result(await r.json(content_type=None))
         except aiohttp.ClientError as e:
             raise MieleApiError(f"network error on PUT {path}: {e}") from e
 

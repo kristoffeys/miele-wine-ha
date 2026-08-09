@@ -27,6 +27,12 @@ official/developer integrations can't.
 | `sensor.*_zone_N_temperature` | Current temperature per cooling zone |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
 
+## Requirements
+
+- **Home Assistant 2024.4+** (the wine-cabinet icon needs **2026.3+**, via the
+  in-integration `brand/` folder).
+- A Miele account with the appliance already set up in the app, on the **owner** account.
+
 ## Install
 
 ### Via HACS (recommended)
@@ -61,6 +67,17 @@ it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL,
   API. It can break if Miele changes endpoints. Use on your own account/appliance.
 - Reverse-engineered against a **KWTUS 7096 E**. Other cooling appliances that expose
   `/Cooling/…` should work; entities self-adjust to what the appliance reports.
+
+## Troubleshooting
+
+- **"Reauthentication required"** — the stored token could no longer be refreshed
+  (most often after you changed your Miele password). Just follow the reauth prompt
+  and paste a fresh `miele://…` login, same as first setup.
+- **Setup can't find the appliance** — make sure you signed in with the **owner**
+  account (the one that set the cabinet up) and that it shows in the Miele app.
+- **Entity briefly unavailable / a control "snaps back"** — Miele's cloud is a bit
+  flaky (intermittent `HTTP 500`s, ~60s polling). Reads are retried; a rejected write
+  (value out of range) surfaces as an error in the log.
 
 ## Credits
 

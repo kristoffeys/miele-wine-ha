@@ -17,7 +17,8 @@
     },
     "abort": {
       "no_appliance": "No wine cabinet found on this Miele account.",
-      "already_configured": "This appliance is already set up."
+      "already_configured": "This appliance is already set up.",
+      "reauth_successful": "Re-authentication was successful."
     }
   },
   "entity": {
