@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icons/icon.png" width="128" alt="Miele Wine">
+  <img src="custom_components/miele_wine/brand/icon.png" width="128" alt="Miele Wine">
 </p>
 
 # Miele Wine (consumer cloud) — Home Assistant
