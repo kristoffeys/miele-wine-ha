@@ -9,6 +9,8 @@ This integration talks to the **consumer app's cloud API** (`rest-*.domestic.mie
 using the same OAuth login the Miele phone app uses — so it can drive endpoints the
 official/developer integrations can't.
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kristoffeys&repository=miele-wine-ha&category=integration)
+
 ## Entities
 
 | Entity | What |
@@ -21,17 +23,27 @@ official/developer integrations can't.
 | `sensor.*_zone_N_light_intensity` | Presentation-light intensity level (0–7, diagnostic) |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
 
-## Install (HACS custom repository)
+## Install
 
-1. HACS → ⋮ → **Custom repositories** → add this repo's URL, category **Integration**.
-2. Install **Miele Wine (consumer cloud)**, restart Home Assistant.
-3. Settings → Devices & Services → **Add Integration** → *Miele Wine*.
-4. Enter your account **country code** (e.g. `be`, `de`, `nl`, `gb`).
-5. The flow shows a Miele login URL. Open it in a browser, sign in **with the same
+### Via HACS (recommended)
+
+Click the badge to add this repository to HACS on your instance:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kristoffeys&repository=miele-wine-ha&category=integration)
+
+…then **Download**, restart Home Assistant, and set up the integration (below). Or add
+it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL, category
+**Integration**.
+
+### Set up the integration
+
+1. Settings → Devices & Services → **Add Integration** → *Miele Wine*.
+2. Enter your account **country code** (e.g. `be`, `de`, `nl`, `gb`).
+3. The flow shows a Miele login URL. Open it in a browser, sign in **with the same
    account your phone app uses**, and when the browser refuses to open the final
    `miele://oauth2-code/?code=…` link (expected!), **copy that whole `miele://…` URL
    and paste it back** into the form.
-6. Done — your wine cabinet and its entities appear.
+4. Done — your wine cabinet and its entities appear.
 
 > The appliance must already be set up in the Miele app on the **owner** account.
 
