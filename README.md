@@ -63,8 +63,6 @@ it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL,
   automatically and persisted in the config entry (survives restarts).
 - **Polling:** state is polled (~60 s). The appliance's realtime channel is a
   WebSocket (`mcs2`) — a future enhancement could push state instantly.
-- **Unofficial:** this uses Miele's private consumer API, not a supported developer
-  API. It can break if Miele changes endpoints. Use on your own account/appliance.
 - Reverse-engineered against a **KWTUS 7096 E**. Other cooling appliances that expose
   `/Cooling/…` should work; entities self-adjust to what the appliance reports.
 
@@ -83,7 +81,22 @@ it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL,
 
 Icon: wine-cabinet icon from [Flaticon](https://www.flaticon.com/free-icon/wine-cooler_11623284).
 
-## Disclaimer
+## ⚠️ Caveats & disclaimer
 
-Not affiliated with or endorsed by Miele. Provided as-is. You are responsible for
-complying with Miele's terms for your account.
+Please read before installing:
+
+- **Unofficial private API.** This talks to Miele's **consumer app** cloud
+  (`rest-*.domestic.miele-iot.com`), *not* the documented 3rd-party developer API. It is
+  undocumented and unsupported — Miele can change or break it at any time without notice.
+- **It uses your account login.** Setup performs the consumer app's OAuth (PKCE) flow and
+  stores the resulting token in Home Assistant. Treat HA state/history access as
+  equivalent to access to your Miele account.
+- **Possibly against Miele's terms.** Using the private app API may fall outside Miele's
+  intended use / terms of service. Use it only on **your own account and appliance, at
+  your own risk.**
+- **Be gentle with the cloud.** The domestic endpoints rate-limit and are intermittently
+  flaky (`HTTP 500`s). Don't lower the poll interval aggressively.
+- **Reverse-engineered against one appliance** (KWTUS 7096 E). Other cooling models
+  expose the same `/Cooling/…` shape, but behaviour may vary.
+- **Not affiliated with or endorsed by Miele.** Provided as-is, without warranty. The
+  wine-cabinet icon is not a Miele trademark.
