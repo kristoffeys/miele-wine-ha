@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Miele wine cabinet",
+        "description": "Sign in with the same Miele account your phone app uses. First, your account's country.",
+        "data": { "country": "Country code (e.g. be, de, nl, gb)" }
+      },
+      "auth": {
+        "title": "Log in to Miele",
+        "description": "1. Open this URL in a browser and log in:\n\n{authorize_url}\n\n2. After login your browser will refuse to open the final `miele://oauth2-code/?code=...` link — that is expected and means it worked. Copy that whole `miele://...` URL and paste it below. (If it vanishes, open DevTools → Network → Preserve log and grab the last blocked `miele://` request.)",
+        "data": { "redirect_url": "Pasted miele:// URL" }
+      }
+    },
+    "error": {
+      "auth_failed": "Login failed — check that you pasted the full miele:// URL, then try again."
+    },
+    "abort": {
+      "no_appliance": "No wine cabinet found on this Miele account.",
+      "already_configured": "This appliance is already set up."
+    }
+  },
+  "entity": {
+    "light": { "presentation_light": { "name": "Presentation light" } },
+    "sensor": { "humidity_level": { "name": "Humidity level" } }
+  }
+}
