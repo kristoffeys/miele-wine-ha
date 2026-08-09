@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icons/icon.png" width="128" alt="Miele Wine">
+</p>
+
 # Miele Wine (consumer cloud) — Home Assistant
 
 Control and monitor a **Miele wine conditioning unit** (KWTUS / K7000 "EasyControl"
@@ -57,6 +61,10 @@ it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL,
   API. It can break if Miele changes endpoints. Use on your own account/appliance.
 - Reverse-engineered against a **KWTUS 7096 E**. Other cooling appliances that expose
   `/Cooling/…` should work; entities self-adjust to what the appliance reports.
+
+## Credits
+
+Icon: wine-cabinet icon from [Flaticon](https://www.flaticon.com/free-icon/wine-cooler_11623284).
 
 ## Disclaimer
 
