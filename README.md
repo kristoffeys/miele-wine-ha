@@ -20,11 +20,11 @@ official/developer integrations can't.
 | Entity | What |
 |---|---|
 | `light.*_presentation_light` | Presentation light on/off (`/Cooling/PresentationLight`) |
+| `number.*_zone_N_target_temperature` | **Set** target temperature per zone (bounds from the appliance) |
+| `number.*_zone_N_light_intensity` | **Set** presentation-light intensity (0–7) |
+| `number.*_humidity_level` | **Set** humidity control level (bounds from the appliance; the API exposes no %) |
 | `switch.*` | Sabbath mode, child lock, active air filter (auto-created if the appliance reports them) |
 | `sensor.*_zone_N_temperature` | Current temperature per cooling zone |
-| `sensor.*_zone_N_target_temperature` | Target temperature per zone (diagnostic) |
-| `sensor.*_humidity_level` | Humidity control level (low/medium/high — the API exposes no %) |
-| `sensor.*_zone_N_light_intensity` | Presentation-light intensity level (0–7, diagnostic) |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
 
 ## Install

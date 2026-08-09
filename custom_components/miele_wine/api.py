@@ -155,8 +155,10 @@ class MieleCloud:
         )
 
     async def set_cooling_value(self, mac: str, name: str, value: int) -> Any:
-        """Generic /Cooling/{name} setter (PresentationLight, Sabbath, AirFilter, ...).
-
-        Returns the response, e.g. [{"Success":{"Value":N}}] or [{"Failure":...}].
-        """
+        """Generic /Cooling/{name} setter (PresentationLight, Sabbath, AirFilter,
+        HumidityControl, ...). Returns e.g. [{"Success":{"Value":N}}]."""
         return await self._put(f"/V2/Devices/{mac}/Cooling/{name}", {"Value": value})
+
+    async def set_zone_value(self, mac: str, zone: str, name: str, value: int) -> Any:
+        """Generic /Cooling/{zone}/{name} setter (TargetTemp, PresentationLightIntensity)."""
+        return await self._put(f"/V2/Devices/{mac}/Cooling/{zone}/{name}", {"Value": value})

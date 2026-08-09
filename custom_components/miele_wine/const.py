@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "miele_wine"
-PLATFORMS = ["light", "switch", "sensor", "binary_sensor"]
+PLATFORMS = ["light", "switch", "number", "sensor", "binary_sensor"]
 
 # Toggleable /Cooling/{name} settings exposed as switches. on_value is written to turn
 # ON, off_value to turn OFF (PUT /Cooling/{name} {"Value": N}); state is on when the
@@ -21,6 +21,3 @@ CONF_MAC = "mac"                # appliance fabNumber/mac
 CONF_COUNTRY = "country"
 
 DEFAULT_SCAN_INTERVAL = 60      # seconds; the cloud rate-limits and is flaky, keep sane
-
-# HumidityControl level -> label (Value 1..3). No percentage is exposed by the API.
-HUMIDITY_LEVELS = {1: "low", 2: "medium", 3: "high"}
