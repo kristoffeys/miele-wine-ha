@@ -29,11 +29,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    # The coordinator reads the polling options once, at construction, so changing them
+    # has to rebuild it — reload the entry instead of mutating a live coordinator.
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     # Domain-level, not per-entry: registering is a no-op once the services exist, and a
     # call without a target resolves against whatever is in hass.data[DOMAIN].
     async_setup_services(hass)
     return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Apply changed options (scan interval / adaptive polling)."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
