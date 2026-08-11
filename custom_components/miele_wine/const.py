@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "miele_wine"
-PLATFORMS = ["light", "switch", "number", "sensor", "binary_sensor"]
+PLATFORMS = ["climate", "light", "switch", "number", "sensor", "binary_sensor"]
 
 # Toggleable /Cooling/{name} settings exposed as switches. on_value is written to turn
 # ON, off_value to turn OFF (PUT /Cooling/{name} {"Value": N}); state is on when the

@@ -19,13 +19,18 @@ official/developer integrations can't.
 
 | Entity | What |
 |---|---|
+| `climate.*_zone_N` | Thermostat per zone: current + **set** target temperature (bounds from the appliance). Single fixed mode `cool` — the API exposes no way to switch the cabinet off |
 | `light.*_presentation_light` | Presentation light on/off (`/Cooling/PresentationLight`) |
-| `number.*_zone_N_target_temperature` | **Set** target temperature per zone (bounds from the appliance) |
 | `number.*_zone_N_light_intensity` | **Set** presentation-light intensity (0–7) |
 | `number.*_humidity_level` | **Set** humidity control level (bounds from the appliance; the API exposes no %) |
 | `switch.*` | Sabbath mode, child lock, active air filter (auto-created if the appliance reports them) |
 | `sensor.*_zone_N_temperature` | Current temperature per cooling zone |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
+
+`number.*_zone_N_target_temperature` has been replaced by `climate.*_zone_N` — two
+entities writing the same `/Cooling/{zone}/TargetTemp` node is a bug waiting to happen.
+Automations calling `number.set_value` on it should call `climate.set_temperature`
+instead; the stale entity is removed from the registry on upgrade.
 
 ## Requirements
 

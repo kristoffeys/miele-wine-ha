@@ -1,15 +1,18 @@
-"""Settable numeric controls: target temperature, light intensity, humidity level.
+"""Settable numeric controls: light intensity and humidity level.
 
 Each is a /Cooling node exposing {Value, Min, Max, Step}; the entity's bounds come
-straight from the appliance. Temperatures are centi-°C on the wire (÷100 for display).
+straight from the appliance. Target temperature is deliberately NOT here — it is the
+`climate` platform's target_temperature, so exactly one entity ever writes
+/Cooling/{zone}/TargetTemp.
 """
 
 from __future__ import annotations
 
-from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
+from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
+from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -21,12 +24,18 @@ async def async_setup_entry(
 ) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     data = coordinator.data
+    registry = er.async_get(hass)
     entities: list[NumberEntity] = []
 
     for z in sorted(data.get("zones", {})):
         zone = data["zones"][z]
-        if "TargetTemp" in zone:
-            entities.append(TargetTempNumber(coordinator, z))
+        # Target temperature became a climate entity. Drop the number this integration
+        # used to create: nothing supplies it any more, so it would sit in the registry
+        # forever as an unavailable leftover that users have to delete by hand.
+        if old := registry.async_get_entity_id(
+            NUMBER_DOMAIN, DOMAIN, f"{coordinator.mac}_zone{z}_target_temp"
+        ):
+            registry.async_remove(old)
         if "PresentationLightIntensity" in zone:
             entities.append(ZoneLevelNumber(
                 coordinator, z, "PresentationLightIntensity", f"Zone {z} light intensity", "mdi:brightness-6"))
@@ -35,33 +44,6 @@ async def async_setup_entry(
         entities.append(HumidityNumber(coordinator))
 
     async_add_entities(entities)
-
-
-class TargetTempNumber(MieleWineEntity, NumberEntity):
-    """Target temperature for a zone (centi-°C on the wire)."""
-
-    _attr_device_class = NumberDeviceClass.TEMPERATURE
-    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
-    _attr_mode = NumberMode.SLIDER
-
-    def __init__(self, coordinator, zone: str) -> None:
-        super().__init__(coordinator, f"zone{zone}_target_temp")
-        self._zone = zone
-        self._attr_name = f"Zone {zone} target temperature"
-        node = coordinator.data["zones"][zone]["TargetTemp"]
-        self._attr_native_min_value = node["Min"] / 100
-        self._attr_native_max_value = node["Max"] / 100
-        self._attr_native_step = node["Step"] / 100
-
-    @property
-    def native_value(self) -> float | None:
-        node = self.coordinator.data.get("zones", {}).get(self._zone, {}).get("TargetTemp")
-        return round(node["Value"] / 100, 2) if node else None
-
-    async def async_set_native_value(self, value: float) -> None:
-        await self.coordinator.client.set_zone_value(
-            self.coordinator.mac, self._zone, "TargetTemp", int(round(value * 100)))
-        await self.coordinator.async_request_refresh()
 
 
 class ZoneLevelNumber(MieleWineEntity, NumberEntity):

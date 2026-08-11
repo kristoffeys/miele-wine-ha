@@ -1,7 +1,8 @@
 """Sensors: current temperature per cooling zone.
 
-Target temperature, light intensity and humidity are settable — they live on the
-`number` platform, not here.
+Kept alongside the `climate` entity on purpose — a plain sensor is what feeds history
+and long-term statistics. Light intensity and humidity are settable and live on the
+`number` platform; target temperature lives on `climate`.
 """
 
 from __future__ import annotations
@@ -12,10 +13,9 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .api import centi_to_celsius
 from .const import DOMAIN
 from .entity import MieleWineEntity
-
-UNUSED = -32768
 
 
 async def async_setup_entry(
@@ -44,6 +44,4 @@ class ZoneTempSensor(MieleWineEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         node = self.coordinator.data.get("zones", {}).get(self._zone, {}).get("Temp")
-        if not node or node.get("Value") in (None, UNUSED):
-            return None
-        return round(node["Value"] / 100, 2)
+        return centi_to_celsius(node.get("Value")) if node else None
