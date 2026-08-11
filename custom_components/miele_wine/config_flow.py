@@ -7,6 +7,11 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from . import auth
 from .api import MieleApiError, MieleCloud
@@ -29,9 +34,21 @@ class MieleWineConfigFlow(ConfigFlow, domain=DOMAIN):
         """Step 1: choose country, generate the authorize URL."""
         if user_input is not None:
             return self._begin_login(user_input[CONF_COUNTRY])
+        countries = sorted(auth.CONSUMER_CLIENT_IDS)
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({vol.Required(CONF_COUNTRY, default="be"): str}),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_COUNTRY, default="be"): SelectSelector(
+                        SelectSelectorConfig(
+                            options=countries,
+                            mode=SelectSelectorMode.DROPDOWN,
+                            custom_value=True,
+                            sort=True,
+                        )
+                    )
+                }
+            ),
         )
 
     def _begin_login(self, country: str) -> ConfigFlowResult:
