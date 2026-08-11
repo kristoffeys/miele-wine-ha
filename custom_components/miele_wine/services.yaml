@@ -1,0 +1,57 @@
+# Names and descriptions live in strings.json / translations/en.json.
+set_cooling_value:
+  fields:
+    name:
+      required: true
+      example: Sabbath
+      selector:
+        text:
+    value:
+      required: true
+      example: 1
+      # The wire format is a signed 16-bit int (api.UNUSED_TEMP is -32768); temperatures
+      # are centi-degrees, so 12 °C is 1200.
+      selector:
+        number:
+          min: -32768
+          max: 32767
+          step: 1
+          mode: box
+    device_id:
+      selector:
+        device:
+          integration: miele_wine
+    entry_id:
+      selector:
+        config_entry:
+          integration: miele_wine
+
+set_zone_value:
+  fields:
+    zone:
+      required: true
+      example: "1"
+      selector:
+        text:
+    name:
+      required: true
+      example: TargetTemp
+      selector:
+        text:
+    value:
+      required: true
+      example: 1200
+      selector:
+        number:
+          min: -32768
+          max: 32767
+          step: 1
+          mode: box
+    device_id:
+      selector:
+        device:
+          integration: miele_wine
+    entry_id:
+      selector:
+        config_entry:
+          integration: miele_wine

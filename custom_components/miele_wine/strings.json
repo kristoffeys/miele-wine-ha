@@ -23,5 +23,55 @@
   },
   "entity": {
     "light": { "presentation_light": { "name": "Presentation light" } }
+  },
+  "services": {
+    "set_cooling_value": {
+      "name": "Set cooling value",
+      "description": "Writes a raw value to a unit-wide /Cooling node on the appliance (PUT /Cooling/{name}). An escape hatch for nodes this integration has no entity for; the appliance's reply is returned so you can discover what a node accepts.",
+      "fields": {
+        "name": {
+          "name": "Node name",
+          "description": "The /Cooling node to write, e.g. Sabbath, AirFilter, HumidityControl. Letters and digits only, starting with a letter."
+        },
+        "value": {
+          "name": "Value",
+          "description": "The integer to write. Most toggles use 1 for on and 2 for off; temperatures are centi-degrees (1200 = 12 °C)."
+        },
+        "device_id": {
+          "name": "Device",
+          "description": "The wine cabinet to write to. Can be left empty when only one is set up."
+        },
+        "entry_id": {
+          "name": "Config entry",
+          "description": "Alternative to Device: the config entry to write to. Can be left empty when only one is set up."
+        }
+      }
+    },
+    "set_zone_value": {
+      "name": "Set zone value",
+      "description": "Writes a raw value to a per-zone /Cooling node on the appliance (PUT /Cooling/{zone}/{name}), e.g. TargetTemp or PresentationLightIntensity. The appliance's reply is returned.",
+      "fields": {
+        "zone": {
+          "name": "Zone",
+          "description": "The zone key as reported by the API: 1, 2, ... Digits only."
+        },
+        "name": {
+          "name": "Node name",
+          "description": "The /Cooling/{zone} node to write, e.g. TargetTemp, PresentationLightIntensity. Letters and digits only, starting with a letter."
+        },
+        "value": {
+          "name": "Value",
+          "description": "The integer to write. Temperatures are centi-degrees (1200 = 12 °C); levels are raw integers inside the node's own Min/Max."
+        },
+        "device_id": {
+          "name": "Device",
+          "description": "The wine cabinet to write to. Can be left empty when only one is set up."
+        },
+        "entry_id": {
+          "name": "Config entry",
+          "description": "Alternative to Device: the config entry to write to. Can be left empty when only one is set up."
+        }
+      }
+    }
   }
 }
