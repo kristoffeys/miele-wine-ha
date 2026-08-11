@@ -21,6 +21,22 @@
       "reauth_successful": "Re-authentication was successful."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling",
+        "description": "The Miele consumer cloud is rate-limited and throws intermittent errors, so how often to poll is a trade-off. Adaptive polling uses the interval below when the cabinet is idle, drops to 10 s for a minute after you change something or while a door is open, and backs off automatically while the cloud is failing.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)",
+          "adaptive": "Adaptive polling"
+        },
+        "data_description": {
+          "scan_interval": "How often to poll when nothing is happening. 15-900 seconds; the default is 60.",
+          "adaptive": "When off, the interval above is used at all times."
+        }
+      }
+    }
+  },
   "entity": {
     "light": { "presentation_light": { "name": "Presentation light" } }
   }

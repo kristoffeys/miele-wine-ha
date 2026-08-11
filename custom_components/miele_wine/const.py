@@ -21,3 +21,13 @@ CONF_MAC = "mac"                # appliance fabNumber/mac
 CONF_COUNTRY = "country"
 
 DEFAULT_SCAN_INTERVAL = 60      # seconds; the cloud rate-limits and is flaky, keep sane
+
+# Options (config entry options, not data — set via the options flow, never at setup).
+# Existing entries have no options at all, so every read goes through
+# entry.options.get(key, default) and no migration is needed.
+CONF_SCAN_INTERVAL = "scan_interval"
+CONF_ADAPTIVE = "adaptive"
+
+MIN_SCAN_INTERVAL = 15          # below this the flaky cloud starts rate-limiting us
+MAX_SCAN_INTERVAL = 900
+DEFAULT_ADAPTIVE = True         # see polling.next_interval() for what "adaptive" does
