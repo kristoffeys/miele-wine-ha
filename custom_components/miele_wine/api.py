@@ -67,6 +67,7 @@ class MieleCloud:
         self._session = session
         self._tokens = dict(tokens)
         self._on_tokens = on_tokens
+        self._refresh_lock = asyncio.Lock()
 
     # --- auth ------------------------------------------------------------
     @property
@@ -76,33 +77,41 @@ class MieleCloud:
     def _host(self) -> str:
         return REST_HOST_BY_REGION.get(self.region, REST_HOST_BY_REGION["EU"])
 
-    async def _access_token(self) -> str:
+    def _token_valid(self) -> bool:
         t = self._tokens
         expires_in = int(t.get("expires_in", 3600))
         age = int(time.time()) - int(t.get("obtained_at", 0))
-        if age < expires_in - EXPIRY_SKEW and t.get("access_token"):
-            return t["access_token"]
-        if not t.get("refresh_token"):
-            raise MieleAuthError("no refresh_token; re-authentication required")
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": t["refresh_token"],
-            "client_id": t["client_id"],
-        }
-        url = TOKEN_URL.format(cc=t["cc"])
-        try:
-            async with self._session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
-                body = await r.json(content_type=None)
-        except aiohttp.ClientError as e:
-            raise MieleApiError(f"token refresh network error: {e}") from e
-        if "access_token" not in body:
-            raise MieleAuthError(f"token refresh failed: {body}")
-        body.setdefault("refresh_token", t["refresh_token"])
-        self._tokens.update(body)
-        self._tokens["obtained_at"] = int(time.time())
-        if self._on_tokens:
-            await self._on_tokens(dict(self._tokens))
-        return self._tokens["access_token"]
+        return bool(age < expires_in - EXPIRY_SKEW and t.get("access_token"))
+
+    async def _access_token(self) -> str:
+        if self._token_valid():
+            return self._tokens["access_token"]
+        async with self._refresh_lock:
+            # Another coroutine may have refreshed while we waited on the lock.
+            if self._token_valid():
+                return self._tokens["access_token"]
+            t = self._tokens
+            if not t.get("refresh_token"):
+                raise MieleAuthError("no refresh_token; re-authentication required")
+            data = {
+                "grant_type": "refresh_token",
+                "refresh_token": t["refresh_token"],
+                "client_id": t["client_id"],
+            }
+            url = TOKEN_URL.format(cc=t["cc"])
+            try:
+                async with self._session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
+                    body = await r.json(content_type=None)
+            except aiohttp.ClientError as e:
+                raise MieleApiError(f"token refresh network error: {e}") from e
+            if "access_token" not in body:
+                raise MieleAuthError(f"token refresh failed: {body}")
+            body.setdefault("refresh_token", t["refresh_token"])
+            self._tokens.update(body)
+            self._tokens["obtained_at"] = int(time.time())
+            if self._on_tokens:
+                await self._on_tokens(dict(self._tokens))
+            return self._tokens["access_token"]
 
     async def _headers(self) -> dict[str, str]:
         return {
