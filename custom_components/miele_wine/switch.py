@@ -1,4 +1,10 @@
-"""Toggleable /Cooling/ settings as switches (Sabbath, Child lock, Air filter)."""
+"""Toggleable /Cooling/{name} settings as switches.
+
+Which switches exist is discovered from the payload, not hardcoded: each node
+reports its own legal values, so any two-valued /Cooling/ field the appliance
+offers becomes a switch — including fields on cooling appliances this integration
+has never been run against. See discovery.py for the classification rules.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +15,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import COOLING_SWITCHES, DOMAIN
+from .const import DOMAIN
+from .discovery import CoolingSwitchSpec, cooling_switch_specs
 from .entity import MieleWineEntity
 
 
@@ -17,11 +24,10 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    cooling = coordinator.data.get("cooling", {})
+    # Only what this appliance actually reports — the payload is the source of truth.
     entities = [
-        MieleCoolingSwitch(coordinator, name, *cfg)
-        for name, cfg in COOLING_SWITCHES.items()
-        if name in cooling  # only expose what the appliance reports
+        MieleCoolingSwitch(coordinator, spec)
+        for spec in cooling_switch_specs(coordinator.data.get("cooling", {}))
     ]
     async_add_entities(entities)
 
@@ -29,12 +35,14 @@ async def async_setup_entry(
 class MieleCoolingSwitch(MieleWineEntity, SwitchEntity):
     """A /Cooling/{name} on/off setting."""
 
-    def __init__(self, coordinator, name: str, friendly: str, on_value: int, off_value: int) -> None:
-        super().__init__(coordinator, f"cooling_{name.lower()}")
-        self._name = name
-        self._on_value = on_value
-        self._off_value = off_value
-        self._attr_name = friendly
+    def __init__(self, coordinator, spec: CoolingSwitchSpec) -> None:
+        # spec.key is f"cooling_{name.lower()}" — the unique_id format shipped
+        # since the first release. Do not change it; it would orphan the entity.
+        super().__init__(coordinator, spec.key)
+        self._name = spec.name
+        self._on_value = spec.on_value
+        self._off_value = spec.off_value
+        self._attr_name = spec.friendly
 
     @property
     def is_on(self) -> bool | None:

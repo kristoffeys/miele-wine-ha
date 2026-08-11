@@ -5,15 +5,9 @@ from __future__ import annotations
 DOMAIN = "miele_wine"
 PLATFORMS = ["climate", "light", "switch", "number", "sensor", "binary_sensor"]
 
-# Toggleable /Cooling/{name} settings exposed as switches. on_value is written to turn
-# ON, off_value to turn OFF (PUT /Cooling/{name} {"Value": N}); state is on when the
-# read-back Value == on_value.
-COOLING_SWITCHES = {
-    # key: (friendly name, on_value, off_value)
-    "Sabbath": ("Sabbath mode", 1, 2),
-    "ChildProof": ("Child lock", 1, 2),
-    "AirFilter": ("Active air filter", 1, 2),
-}
+# The hardcoded COOLING_SWITCHES table used to live here. Switches are now derived
+# from each node's own AllValues enumeration — see discovery.py, which also keeps the
+# labels and the 1=on/2=off convention.
 
 # Config entry keys
 CONF_TOKENS = "tokens"          # the full token dict (access/refresh/cc/client_id/region/...)
