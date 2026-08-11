@@ -35,10 +35,26 @@ TOGGLE_OFF = 2
 # conventional 1/2 pair) so no already-registered entity disappears on upgrade.
 KNOWN_TOGGLES = frozenset({"Sabbath", "ChildProof", "AirFilter"})
 
-# Owned by another platform, so the switch platform must not also claim them:
-# PresentationLight is the light entity, HumidityControl the number entity.
-# Both are still yielded by iter_cooling_nodes — the exclusion is switch-specific.
-NOT_SWITCHES = frozenset({"PresentationLight", "HumidityControl"})
+# Names the switch platform must not claim. All of them are still yielded by
+# iter_cooling_nodes — the exclusion is switch-specific, not a blanket skip.
+#
+# Do not "helpfully" shorten this set. Every entry is here for a reason:
+#   PresentationLight  — the light entity owns it.
+#   HumidityControl    — the number entity owns it.
+#   TempUnit           — an enumeration, not a toggle: "Temperature unit: on" is
+#                        meaningless, and this field drives what the appliance's own
+#                        front panel displays, so an accidental toggle is a visible
+#                        configuration change on the physical unit.
+#   PresentationType   — likewise an enumeration; a switch would misrepresent it.
+# The last two belong to a future select platform. Excluding them costs nothing and
+# leaves no trace; creating them would write a unique_id into the entity registry
+# that the select platform would then have to awkwardly reuse or orphan. Cheap to
+# add later, expensive to retract — so they stay out until there is a select entity
+# to own them. classify_node() still reports them as "select" once they enumerate
+# three or more values, so nothing has to re-derive that.
+NOT_SWITCHES = frozenset(
+    {"PresentationLight", "HumidityControl", "TempUnit", "PresentationType"}
+)
 
 # Labels for the nodes we have actually seen. Anything else gets the CamelCase
 # fallback below, which is deliberately dumb but readable.

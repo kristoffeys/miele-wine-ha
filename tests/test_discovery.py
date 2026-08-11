@@ -134,6 +134,33 @@ def test_platform_owned_names_are_not_switches():
     assert "HumidityControl" not in names     # number platform
 
 
+@pytest.mark.parametrize("name", ["TempUnit", "PresentationType"])
+def test_enumerations_get_no_switch_even_at_two_values(name):
+    # These are enumerations, not toggles, and belong to a future select platform.
+    # The node shape alone cannot tell them apart from a real toggle, which is
+    # exactly why the exclusion is by name — see NOT_SWITCHES.
+    assert discovery.cooling_switch_specs({name: TOGGLE_NODE}) == []
+    # ...while an identically-shaped Sabbath node still produces its switch. This
+    # contrast is the regression guard: it fails if the exclusion is dropped.
+    specs = discovery.cooling_switch_specs({"Sabbath": TOGGLE_NODE})
+    assert [(s.name, s.key) for s in specs] == [("Sabbath", "cooling_sabbath")]
+
+
+def test_excluded_enumerations_are_still_visible_to_other_platforms():
+    # Excluded from switches, not from discovery — a select platform must be able
+    # to find them without re-walking the payload.
+    kinds = {
+        name: kind
+        for name, _node, kind in discovery.iter_cooling_nodes(
+            {
+                "TempUnit": {"Value": 1, "AllValues": [1, 2]},
+                "PresentationType": {"Value": 1, "AllValues": [1, 2, 3]},
+            }
+        )
+    }
+    assert kinds == {"TempUnit": "toggle", "PresentationType": "select"}
+
+
 def test_known_toggle_without_enumeration_keeps_its_switch():
     # Defensive: a firmware that omits AllValues on a node we have always shipped
     # must not make that entity vanish on upgrade.
