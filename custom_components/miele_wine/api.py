@@ -11,6 +11,7 @@ the rotated tokens (HA stores them in the config entry).
 
 from __future__ import annotations
 
+import asyncio
 import time
 from typing import Any, Awaitable, Callable
 
@@ -117,7 +118,10 @@ class MieleCloud:
         url = f"https://{self._host()}{path}"
         headers = await self._headers()
         last = None
-        for _ in range(3):
+        for attempt in range(3):
+            if attempt:
+                # small backoff before retrying the flaky upstream 500 (0.5s, 1s)
+                await asyncio.sleep(0.5 * attempt)
             try:
                 async with self._session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=20)) as r:
                     if r.status == 500:
