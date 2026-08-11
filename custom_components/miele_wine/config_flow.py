@@ -106,10 +106,8 @@ class MieleWineConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def _finish_reauth(self) -> ConfigFlowResult:
         assert self._reauth_entry is not None and self._tokens is not None
-        self.hass.config_entries.async_update_entry(
-            self._reauth_entry, data={**self._reauth_entry.data, CONF_TOKENS: self._tokens}
+        return self.async_update_reload_and_abort(
+            self._reauth_entry,
+            data={**self._reauth_entry.data, CONF_TOKENS: self._tokens},
+            reason="reauth_successful",
         )
-        self.hass.async_create_task(
-            self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
-        )
-        return self.async_abort(reason="reauth_successful")
