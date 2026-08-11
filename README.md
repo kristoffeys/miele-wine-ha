@@ -23,7 +23,7 @@ official/developer integrations can't.
 | `light.*_presentation_light` | Presentation light on/off (`/Cooling/PresentationLight`) |
 | `number.*_zone_N_light_intensity` | **Set** presentation-light intensity (0–7) |
 | `number.*_humidity_level` | **Set** humidity control level (bounds from the appliance; the API exposes no %) |
-| `switch.*` | Sabbath mode, child lock, active air filter (auto-created if the appliance reports them) |
+| `switch.*` | Every two-valued `/Cooling/` setting the appliance reports — Sabbath mode, child lock, active air filter, and anything else your model offers (e.g. SuperCooling). Derived from the appliance's own `AllValues`, so no code change is needed for settings this integration has never seen |
 | `sensor.*_zone_N_temperature` | Current temperature per cooling zone |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
 | `binary_sensor.*_zone_N_temperature_excursion` | **Problem** — zone outside the safe band for longer than the grace period |
@@ -51,6 +51,55 @@ door opened and closed between two polls is invisible.
 entities writing the same `/Cooling/{zone}/TargetTemp` node is a bug waiting to happen.
 Automations calling `number.set_value` on it should call `climate.set_temperature`
 instead; the stale entity is removed from the registry on upgrade.
+
+The device page also carries the appliance's model, serial, firmware and XKM hardware
+version, read from `/Ident/`. Please include those in any bug report — whether a write is
+firmware-gated is decided by exactly that firmware.
+
+## Services
+
+Two escape hatches onto the generic setters, for `/Cooling/` nodes this integration doesn't
+model as entities:
+
+| Service | Writes |
+|---|---|
+| `miele_wine.set_cooling_value` | `PUT /V2/Devices/{mac}/Cooling/{name}` `{"Value": N}` |
+| `miele_wine.set_zone_value` | `PUT /V2/Devices/{mac}/Cooling/{zone}/{name}` `{"Value": N}` |
+
+```yaml
+action: miele_wine.set_cooling_value
+data:
+  device_id: <your wine cabinet>   # optional when only one cabinet is set up
+  name: Sabbath
+  value: 1
+response_variable: reply     # reply.result == [{"Success": {"Value": 1}}]
+```
+
+Values are the raw wire format: `1` = on / `2` = off for toggles, and temperatures are
+centi-degrees, so 12 °C is `1200`.
+
+Both return the appliance's reply as response data, which makes them a way to **discover**
+what your cabinet supports: the original reverse-engineering capture never enumerated the
+full `/Cooling/` body, so nodes beyond the ones modelled above may well exist on your unit.
+A rejected write comes back as `[{"Failure": …}]` and is raised as an error rather than
+silently "succeeding".
+
+`name` must look like `SomeCoolingNode` (letters and digits, starting with a letter) — it is
+interpolated into the request path, so slashes and `..` are refused.
+
+## Options
+
+Settings → Devices & Services → *Miele Wine* → **Configure**:
+
+| Option | Default | What |
+|---|---|---|
+| Scan interval | 60 s | Base poll interval, 15–900 s |
+| Adaptive polling | on | Poll fast (10 s) for a minute after a write and while a door is open; back off exponentially to 10 min while the cloud is erroring |
+
+Adaptive polling exists because a fixed interval is wrong in both directions: too slow to
+reflect a light you just switched, too chatty against an idle cabinet on a cloud that
+rate-limits and intermittently returns `HTTP 500`. Turning it off restores plain
+fixed-interval polling.
 
 ## Requirements
 
@@ -86,8 +135,10 @@ it manually: HACS → ⋮ → **Custom repositories** → paste this repo's URL,
 
 - **Auth:** consumer MAP OAuth 2.0 + PKCE; the token (scope `mcs`) is refreshed
   automatically and persisted in the config entry (survives restarts).
-- **Polling:** state is polled (~60 s). The appliance's realtime channel is a
-  WebSocket (`mcs2`) — a future enhancement could push state instantly.
+- **Polling:** state is polled — 60 s by default, configurable, and adaptive (see
+  [Options](#options)). The appliance's realtime channel is a WebSocket (`mcs2`); Miele's
+  SuperVision mDNS push and the developer API's SSE stream are the other two ways to get
+  state instantly, none of which this integration uses yet.
 - Reverse-engineered against a **KWTUS 7096 E**. Other cooling appliances that expose
   `/Cooling/…` should work; entities self-adjust to what the appliance reports.
 
