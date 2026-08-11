@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+- Config flow: country is now a dropdown (built from the known MAP client-id table,
+  still allows a custom value) instead of free text.
+- Add config-entry diagnostics: a redacted state dump (entry data, device ident,
+  coordinator state) downloadable from the device page for bug reports.
+- Add a small backoff (0.5s, 1s) between retries of the flaky upstream `HTTP 500`
+  on GETs instead of retrying immediately.
+
 ## 0.2.1
 - Add reauthentication flow (recover after the token can no longer be refreshed,
   e.g. after a Miele password change) instead of forcing a delete + re-add.
