@@ -20,6 +20,10 @@ TO_REDACT = {
     "groupKey",
     "sub",
     "FabNumber",
+    # ident.py resolves the serial under either spelling, so both have to be
+    # redacted; "serial" is the field name this integration uses downstream.
+    "fabNumber",
+    "serial",
     "serial_number",
     "serialNo",
 }

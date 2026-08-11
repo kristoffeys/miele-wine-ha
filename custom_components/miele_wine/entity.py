@@ -7,6 +7,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import MieleWineCoordinator
+from .ident import device_ident
 
 
 class MieleWineEntity(CoordinatorEntity[MieleWineCoordinator]):
@@ -20,12 +21,16 @@ class MieleWineEntity(CoordinatorEntity[MieleWineCoordinator]):
 
     @property
     def device_info(self) -> DeviceInfo:
-        label = self.coordinator.ident.get("DeviceIdentLabel", {}) if self.coordinator.ident else {}
-        model = label.get("TechType") or "Wine conditioning unit"
+        # identifiers and name are deliberately unchanged: both key the device
+        # registry entry, and touching either would orphan the existing device
+        # and every entity under it.
+        info = device_ident(self.coordinator.ident, self.coordinator.mac)
         return DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.mac)},
-            manufacturer="Miele",
-            model=model,
+            manufacturer=info.manufacturer,
+            model=info.model,
             name="Miele wine cabinet",
-            serial_number=self.coordinator.mac,
+            serial_number=info.serial,
+            sw_version=info.sw_version,
+            hw_version=info.hw_version,
         )
