@@ -11,6 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import MieleCloud
 from .const import CONF_MAC, CONF_TOKENS, DOMAIN, PLATFORMS
 from .coordinator import MieleWineCoordinator
+from .services import async_setup_services, async_unload_services
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -29,6 +30,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Domain-level, not per-entry: registering is a no-op once the services exist, and a
+    # call without a target resolves against whatever is in hass.data[DOMAIN].
+    async_setup_services(hass)
     return True
 
 
@@ -37,4 +41,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        # Keep the services alive while any other entry can still serve them.
+        if not hass.data[DOMAIN]:
+            async_unload_services(hass)
     return unloaded
