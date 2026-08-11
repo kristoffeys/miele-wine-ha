@@ -26,6 +26,26 @@ official/developer integrations can't.
 | `switch.*` | Sabbath mode, child lock, active air filter (auto-created if the appliance reports them) |
 | `sensor.*_zone_N_temperature` | Current temperature per cooling zone |
 | `binary_sensor.*_zone_N_door` | Door open/closed per zone |
+| `binary_sensor.*_zone_N_temperature_excursion` | **Problem** — zone outside the safe band for longer than the grace period |
+| `binary_sensor.*_zone_N_door_left_open` | **Problem** — door open past the threshold |
+| `sensor.*_zone_N_time_out_of_range_today` | Minutes outside the safe band today (resets at local midnight) |
+| `sensor.*_zone_N_temperature_trend` | °C/h slope over the last hour — a failing compressor shows up here first (diagnostic) |
+
+### Wine safety
+
+The four safety entities are derived from the `Temp` and `Door` values already polled;
+they add no API calls and write nothing to the appliance. Wine is damaged by *sustained*
+deviation and by thermal cycling rather than by one momentary reading, so the excursion
+alert integrates time out of band and only trips past a grace period, and the daily
+counter adds up every minute out of range even when no single spell was long enough to
+alarm.
+
+Defaults: safe band **10–14 °C**, excursion grace **30 min**, door threshold **60 s**,
+trend window **1 h**. These come from general wine-storage guidance, **not** from Miele
+documentation — the appliance reports no such limits over this API. They are constants in
+`const.py` today; if your cabinet is set outside 10–14 °C the excursion sensor will read
+*problem* until the band is configurable. Resolution is the poll interval (60 s), so a
+door opened and closed between two polls is invisible.
 
 `number.*_zone_N_target_temperature` has been replaced by `climate.*_zone_N` — two
 entities writing the same `/Cooling/{zone}/TargetTemp` node is a bug waiting to happen.
