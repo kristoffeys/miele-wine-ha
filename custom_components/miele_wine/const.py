@@ -31,3 +31,17 @@ CONF_ADAPTIVE = "adaptive"
 MIN_SCAN_INTERVAL = 15          # below this the flaky cloud starts rate-limiting us
 MAX_SCAN_INTERVAL = 900
 DEFAULT_ADAPTIVE = True         # see polling.next_interval() for what "adaptive" does
+
+# Wine-safety thresholds. These come from GENERAL WINE-STORAGE GUIDANCE — a steady
+# 10-14 °C cellar band, and the rule that sustained deviation rather than a momentary
+# reading is what harms wine — and NOT from any Miele documentation: the appliance
+# reports no such limits over this API. They are the defaults for the derived safety
+# entities only; nothing here is written to the appliance.
+SAFE_TEMP_LOW_C = 10.0
+SAFE_TEMP_HIGH_C = 14.0
+# A cabinet dips whenever the door opens, so an excursion has to persist to count.
+EXCURSION_GRACE_SECONDS = 30 * 60
+DOOR_OPEN_THRESHOLD_SECONDS = 60
+# One hour of a one-minute poll is ~60 samples: enough to see a failing compressor's
+# drift, short enough that a real change is not averaged away.
+TREND_WINDOW_SECONDS = 60 * 60
