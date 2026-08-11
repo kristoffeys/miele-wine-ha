@@ -33,6 +33,29 @@ LIGHT_ON = 1
 LIGHT_OFF = 2
 
 
+def centi_to_celsius(value: Any) -> float | None:
+    """Convert a /Cooling temperature Value (centi-°C) to °C.
+
+    Every temperature node on this API (`Temp`, `TargetTemp`, and their Min/Max/Step)
+    is an integer in hundredths of a degree. UNUSED_TEMP is the appliance's "this
+    sensor/zone is not in use" sentinel, not a real -327.68 °C reading, so it maps to
+    None the same way a missing node does.
+    """
+    if value is None or value == UNUSED_TEMP:
+        return None
+    return round(value / 100, 2)
+
+
+def celsius_to_centi(value: float) -> int:
+    """Convert °C to the centi-°C integer the appliance expects in a write body.
+
+    Uses Python's round(), i.e. halves go to even — irrelevant in practice because the
+    appliance's TargetTemp Step is whole degrees and it rejects off-step values with a
+    Failure body (see check_write_result).
+    """
+    return int(round(value * 100))
+
+
 class MieleAuthError(Exception):
     """Token refresh / auth failed — the config entry needs re-authentication."""
 
